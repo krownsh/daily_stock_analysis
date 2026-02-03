@@ -319,6 +319,7 @@ class DataFetcherManager:
         from .pytdx_fetcher import PytdxFetcher
         from .baostock_fetcher import BaostockFetcher
         from .yfinance_fetcher import YfinanceFetcher
+        from .taiwan_fetcher import TaiwanFetcher
         from src.config import get_config
 
         config = get_config()
@@ -330,6 +331,7 @@ class DataFetcherManager:
         pytdx = PytdxFetcher()      # 通達信數據源
         baostock = BaostockFetcher()
         yfinance = YfinanceFetcher()
+        taiwan = TaiwanFetcher()
 
         # 初始化數據源列表
         self._fetchers = [
@@ -339,6 +341,7 @@ class DataFetcherManager:
             pytdx,
             baostock,
             yfinance,
+            taiwan,
         ]
 
         # 按優先級排序（Tushare 如果配置了 Token 且初始化成功，優先級為 0）
@@ -383,6 +386,27 @@ class DataFetcherManager:
         """
         errors = []
         
+        # 台股優先處理 (4 位數字代碼)
+        import re
+        if re.match(r'^\d{4}$', stock_code.strip()):
+            # 優先嘗試 TaiwanFetcher
+            for fetcher in self._fetchers:
+                if fetcher.name == "TaiwanFetcher":
+                    try:
+                        logger.info(f"台股代碼偵測: 優先使用 [{fetcher.name}] 獲取 {stock_code}...")
+                        df = fetcher.get_daily_data(
+                            stock_code=stock_code,
+                            start_date=start_date,
+                            end_date=end_date,
+                            days=days
+                        )
+                        if df is not None and not df.empty:
+                            return df, fetcher.name
+                    except Exception as e:
+                        logger.warning(f"[TaiwanFetcher] 台股優先獲取失敗: {e}")
+                        # 失敗後繼續按正常流派嘗試
+                    break
+
         for fetcher in self._fetchers:
             try:
                 logger.info(f"嘗試使用 [{fetcher.name}] 獲取 {stock_code}...")
@@ -531,6 +555,20 @@ class DataFetcherManager:
                     break
             logger.warning(f"[即時行情] 美股 {stock_code} 無可用數據源")
             return None
+        
+        # 台股處理 (如果是 4 位數字代碼，優先嘗試 TaiwanFetcher)
+        import re
+        if re.match(r'^\d{4}$', stock_code.strip()):
+            for fetcher in self._fetchers:
+                if fetcher.name == "TaiwanFetcher":
+                    try:
+                        quote = fetcher.get_realtime_quote(stock_code)
+                        if quote is not None:
+                            logger.info(f"[即時行情] 台股 {stock_code} 成功獲取 (來源: taiwan)")
+                            return quote
+                    except Exception as e:
+                        logger.warning(f"[即時行情] 台股 {stock_code} 獲取失敗: {e}")
+                    break
         
         # 獲取配置的數據源優先級
         source_priority = config.realtime_source_priority.split(',')

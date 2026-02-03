@@ -1005,6 +1005,19 @@ class GeminiAnalyzer:
 | 70%籌碼集中度 | {chip.get('concentration_70', 0):.2%} | |
 | 籌碼狀態 | {chip.get('chip_status', '未知')} | |
 """
+    
+    # 添加台灣股票特有數據
+    if today.get('foreign_buy') is not None and today.get('foreign_buy') != 0:
+        prompt += f"""
+### 🇹🇼 台灣市場特有籌碼數據
+| 指標 | 數值 | 單位 |
+|------|------|------|
+| 外資買賣超 | {today.get('foreign_buy'):,.0f} | 股 |
+| 投信買賣超 | {today.get('it_buy'):,.0f} | 股 |
+| 自營商買賣超 | {today.get('dealers_buy'):,.0f} | 股 |
+| 融資買賣 | {today.get('margin_buy'):,.0f} | 股 |
+| 融券買賣 | {today.get('short_buy'):,.0f} | 股 |
+"""
         
         # 添加趨勢分析結果（基於交易理念的預判）
         if 'trend_analysis' in context:

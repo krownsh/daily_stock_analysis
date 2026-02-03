@@ -36,6 +36,7 @@ from .tushare_fetcher import TushareFetcher
 from .pytdx_fetcher import PytdxFetcher
 from .baostock_fetcher import BaostockFetcher
 from .yfinance_fetcher import YfinanceFetcher
+from .taiwan_fetcher import TaiwanFetcher
 
 __all__ = [
     'BaseFetcher',
@@ -46,4 +47,5 @@ __all__ = [
     'PytdxFetcher',
     'BaostockFetcher',
     'YfinanceFetcher',
+    'TaiwanFetcher',
 ]

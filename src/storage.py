@@ -91,6 +91,13 @@ class StockDaily(Base):
     ma20 = Column(Float)
     volume_ratio = Column(Float)  # 量比
     
+    # 台湾股票特有筹码数据
+    foreign_buy = Column(Float)    # 外资买卖超
+    it_buy = Column(Float)         # 投信买卖超
+    dealers_buy = Column(Float)    # 自营商买卖超
+    margin_buy = Column(Float)     # 融资买卖
+    short_buy = Column(Float)      # 融券买卖
+    
     # 数据来源
     data_source = Column(String(50))  # 记录数据来源（如 AkshareFetcher）
     
@@ -123,6 +130,11 @@ class StockDaily(Base):
             'ma10': self.ma10,
             'ma20': self.ma20,
             'volume_ratio': self.volume_ratio,
+            'foreign_buy': self.foreign_buy,
+            'it_buy': self.it_buy,
+            'dealers_buy': self.dealers_buy,
+            'margin_buy': self.margin_buy,
+            'short_buy': self.short_buy,
             'data_source': self.data_source,
         }
 
@@ -698,6 +710,11 @@ class DatabaseManager:
                         existing.ma10 = row.get('ma10')
                         existing.ma20 = row.get('ma20')
                         existing.volume_ratio = row.get('volume_ratio')
+                        existing.foreign_buy = row.get('foreign_buy')
+                        existing.it_buy = row.get('it_buy')
+                        existing.dealers_buy = row.get('dealers_buy')
+                        existing.margin_buy = row.get('margin_buy')
+                        existing.short_buy = row.get('short_buy')
                         existing.data_source = data_source
                         existing.updated_at = datetime.now()
                     else:
@@ -716,6 +733,11 @@ class DatabaseManager:
                             ma10=row.get('ma10'),
                             ma20=row.get('ma20'),
                             volume_ratio=row.get('volume_ratio'),
+                            foreign_buy=row.get('foreign_buy'),
+                            it_buy=row.get('it_buy'),
+                            dealers_buy=row.get('dealers_buy'),
+                            margin_buy=row.get('margin_buy'),
+                            short_buy=row.get('short_buy'),
                             data_source=data_source,
                         )
                         session.add(record)

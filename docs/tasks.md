@@ -9,4 +9,13 @@
     - [ ] 其他零散檔案轉換
 
 ## 待處理
-- (目前無其他任務)
+- [ ] 台股整合任務：擴展系統以支援台灣市場及個股分析 @started(2026-02-03)
+    - [ ] 實作台股數據抓取器 (Data Provider) - 串接三大法人、融資券等數據
+    - [ ] 更新分析邏輯 (Analyzer) - 納入台股特有的籌碼分析與外部指標 (如 ADR)
+    - [ ] 完善台股新聞與輿情抓取
+
+## 已完成的擴展任務 (2026-02-03)
+- [x] 新增 `TaiwanFetcher`：支援透過 `yfinance` 獲取台股歷史數據與即時行情
+- [x] 資料庫結構調整：新增 `foreign_buy`, `it_buy`, `dealers_buy`, `margin_buy`, `short_buy` 欄位以支援台股籌碼分析
+- [x] `GeminiAnalyzer` 更新：在 Prompt 中動態注入台股特有的籌碼與基本面數據 (PE/PB/市值)
+- [x] `DataFetcherManager` 集成：完美支援 4 位數台股代碼自動識別與故障切換
