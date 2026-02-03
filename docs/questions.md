@@ -40,6 +40,17 @@
    - 因為一個機器人可以服務很多人，系統必須知道要把日報推播給哪一個特定的用戶或群組，因此必須顯式指定 ID。
    - **如何獲取 ID？** 通常可以在 LINE Developers 控制台的 Messaging API Channel 設定頁面最下方找到 `Your user ID`。
 
+## GitHub Actions 為何沒收到 LINE 訊息？ (2026-02-03)
+
+**問題：** 如果是在 GitHub Actions 執行，改了程式碼為何還是沒收到訊息？
+
+**解釋：**
+GitHub Actions 運作在隔離環境，不能直接讀取本地的 `.env`。您必須將 Token 存入 GitHub 的 **Secrets** 中：
+1. 前往 GitHub 倉庫的 `Settings` -> `Secrets and variables` -> `Actions`。
+2. 點擊 `New repository secret`。
+3. 名稱填入 `LINE_NOTIFY_TOKEN` (或 `LINE_CHANNEL_ACCESS_TOKEN` 等)，數值貼入您的金鑰。
+4. 修正後的 `.github/workflows/daily_analysis.yml` 會在執行時將這些 Secrets 映射為程式可讀取的環境變數。
+
 ## LINE 通知的配置位置確認 (2026-02-03)
 
 **問題：** LINE 的相關 Token 是不是跟其他的配置放在同一個位置？
