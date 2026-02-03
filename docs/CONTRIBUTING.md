@@ -1,121 +1,121 @@
-# 贡献指南
+# 貢獻指南
 
-感谢你对本项目的关注！欢迎任何形式的贡献。
+感謝你對本專案的關注！歡迎任何形式的貢獻。
 
-## 🐛 报告 Bug
+## 🐛 報告 Bug
 
-1. 先搜索 [Issues](https://github.com/ZhuLinsen/daily_stock_analysis/issues) 确认问题未被报告
-2. 使用 Bug Report 模板创建新 Issue
-3. 提供详细的复现步骤和环境信息
+1. 先搜尋 [Issues](https://github.com/ZhuLinsen/daily_stock_analysis/issues) 確認問題未被報告
+2. 使用 Bug Report 模板建立新 Issue
+3. 提供詳細的複現步驟和環境資訊
 
-## 💡 功能建议
+## 💡 功能建議
 
-1. 先搜索 Issues 确认建议未被提出
-2. 使用 Feature Request 模板创建新 Issue
-3. 详细描述你的使用场景和期望功能
+1. 先搜尋 Issues 確認建議未被提出
+2. 使用 Feature Request 模板建立新 Issue
+3. 詳細描述你的使用場景和期望功能
 
-## 🔧 提交代码
+## 🔧 提交程式碼
 
-### 开发环境
+### 開發環境
 
 ```bash
-# 克隆仓库
+# 克隆倉庫
 git clone https://github.com/ZhuLinsen/daily_stock_analysis.git
 cd daily_stock_analysis
 
-# 创建虚拟环境
+# 建立虛擬環境
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
-# 安装依赖
+# 安裝依賴
 pip install -r requirements.txt
 
-# 配置环境变量
+# 配置環境變數
 cp .env.example .env
 ```
 
 ### 提交流程
 
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feature/your-feature`
-3. 提交改动：`git commit -m 'feat: add some feature'`
+1. Fork 本倉庫
+2. 建立特性分支：`git checkout -b feature/your-feature`
+3. 提交改動：`git commit -m 'feat: add some feature'`
 4. 推送分支：`git push origin feature/your-feature`
-5. 创建 Pull Request
+5. 建立 Pull Request
 
-### Commit 规范
+### Commit 規範
 
-使用 [Conventional Commits](https://www.conventionalcommits.org/) 规范：
+使用 [Conventional Commits](https://www.conventionalcommits.org/) 規範：
 
 ```
 feat: 新功能
-fix: Bug 修复
-docs: 文档更新
-style: 代码格式（不影响功能）
-refactor: 重构
-perf: 性能优化
-test: 测试相关
-chore: 构建/工具相关
+fix: Bug 修復
+docs: 文檔更新
+style: 程式碼格式（不影響功能）
+refactor: 重構
+perf: 性能優化
+test: 測試相關
+chore: 建置/工具相關
 ```
 
-示例：
+範例：
 ```
-feat: 添加钉钉机器人支持
-fix: 修复 429 限流重试逻辑
-docs: 更新 README 部署说明
+feat: 添加釘釘機器人支持
+fix: 修復 429 限流重試邏輯
+docs: 更新 README 部署說明
 ```
 
-### 代码规范
+### 程式碼規範
 
-- Python 代码遵循 PEP 8
-- 函数和类需要添加 docstring
-- 重要逻辑添加注释
-- 新功能需要更新相关文档
+- Python 程式碼遵循 PEP 8
+- 函式和類別需要添加 docstring
+- 重要邏輯添加註釋
+- 新功能需要更新相關文檔
 
-### CI 自动检查
+### CI 自動檢查
 
-提交 PR 后，CI 会自动运行以下检查：
+提交 PR 後，CI 會自動運行以下檢查：
 
-| 检查项 | 说明 | 必须通过 |
+| 檢查項 | 說明 | 必須通過 |
 |--------|------|:--------:|
-| 🐍 语法检查 | Python 语法正确性 | ✅ |
-| 📦 依赖安装 | Python 3.10/3.11/3.12 多版本测试 | ✅ |
-| 🐳 Docker 构建 | Docker 镜像能正常构建 | ✅ |
-| 🔍 代码规范 | Black/Flake8/isort 格式检查 | ⚠️ 警告 |
-| 🔒 安全检查 | Bandit/Safety 漏洞扫描 | ⚠️ 警告 |
-| 🧪 单元测试 | pytest 测试（如有） | ✅ |
+| 🐍 語法檢查 | Python 語法正確性 | ✅ |
+| 📦 依賴安裝 | Python 3.10/3.11/3.12 多版本測試 | ✅ |
+| 🐳 Docker 建置 | Docker 映像檔能正常建置 | ✅ |
+| 🔍 程式碼規範 | Black/Flake8/isort 格式檢查 | ⚠️ 警告 |
+| 🔒 安全檢查 | Bandit/Safety 漏洞掃描 | ⚠️ 警告 |
+| 🧪 單元測試 | pytest 測試（如有） | ✅ |
 
-**本地运行检查：**
+**本地運行檢查：**
 
 ```bash
-# 安装检查工具
+# 安裝檢查工具
 pip install black flake8 isort bandit
 
-# 代码格式化
+# 程式碼格式化
 black .
 isort .
 
-# 静态检查
+# 靜態檢查
 flake8 .
 
-# 安全扫描
+# 安全掃描
 bandit -r . -x ./test_*.py
 ```
 
-## 📋 优先贡献方向
+## 📋 優先貢獻方向
 
-查看 [Roadmap](README.md#-roadmap) 了解当前需要的功能：
+查看 [Roadmap](README.md#-roadmap) 了解當前需要的功能：
 
-- 🔔 新通知渠道（钉钉、飞书、Telegram）
+- 🔔 新通知管道（釘釘、飛書、Telegram）
 - 🤖 新 AI 模型支持（GPT-4、Claude）
-- 📊 新数据源接入
-- 🐛 Bug 修复和性能优化
-- 📖 文档完善和翻译
+- 📊 新數據源接入
+- 🐛 Bug 修復和性能優化
+- 📖 文檔完善和翻譯
 
-## ❓ 问题解答
+## ❓ 問題解答
 
-如有任何问题，欢迎：
-- 创建 Issue 讨论
+如有任何問題，歡迎：
+- 建立 Issue 討論
 - 查看已有 Issue 和 Discussion
 
-再次感谢你的贡献！ 🎉
+再次感謝你的貢獻！ 🎉
