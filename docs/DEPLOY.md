@@ -196,6 +196,9 @@ journalctl -u stock-analyzer -f
 | `SCHEDULE_TIME` | `18:00` | 每日執行時間 |
 | `MARKET_REVIEW_ENABLED` | `true` | 是否啟用大盤複盤 |
 | `TAVILY_API_KEYS` | - | 新聞搜尋（可選） |
+| `LINE_NOTIFY_TOKEN` | - | LINE Notify Token |
+| `LINE_CHANNEL_ACCESS_TOKEN` | - | LINE Messaging API Token |
+| `LINE_USER_ID` | - | LINE 接收者 ID |
 
 ---
 
@@ -360,6 +363,9 @@ git push -u origin main
 | `TAVILY_API_KEYS` | Tavily 搜尋 API Key | 推薦 |
 | `SERPAPI_API_KEYS` | SerpAPI Key | 可選 |
 | `TUSHARE_TOKEN` | Tushare Token | 可選 |
+| `LINE_NOTIFY_TOKEN` | LINE Notify Token | 可選* |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API Token | 可選* |
+| `LINE_USER_ID` | LINE 接收者 ID | 可選* |
 | `GEMINI_MODEL` | 模型名稱（默認 gemini-2.0-flash） | 可選 |
 
 > *注：通知管道至少配置一個，支持多管道同時推送

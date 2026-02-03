@@ -11,7 +11,7 @@
 
 **基於 AI 大模型的 A股/港股/美股 智能分析系統**
 
-自動分析自選股 → 生成決策儀表盤 → 多渠道推送（Telegram/Discord/郵件/企業微信/飛書）
+自動分析自選股 → 生成決策儀表盤 → 多渠道推送（LINE/Telegram/Discord/郵件/企業微信/飛書）
 
 **零成本部署** · GitHub Actions 免費運行 · 無需伺服器
 
@@ -38,7 +38,7 @@
 | 分析 | 多維度分析 | 技術面 + 籌碼分布 + 輿情情報 + 實時行情 |
 | 市場 | 全球市場 | 支援 A股、港股、美股 |
 | 復盤 | 大盤復盤 | 每日市場概覽、板塊漲跌、北向資金 |
-| 推送 | 多渠道通知 | Telegram、Discord、郵件、企業微信、飛書等 |
+| 推送 | 多渠道通知 | LINE、Telegram、Discord、郵件、企業微信、飛書等 |
 | 自動化 | 定時運行 | GitHub Actions 定時執行，無需伺服器 |
 
 ### 技術棧與數據來源
@@ -101,6 +101,9 @@
 | `PUSHPLUS_TOKEN` | PushPlus Token（[獲取地址](https://www.pushplus.plus)，國內推送服務） | 可選 |
 | `CUSTOM_WEBHOOK_URLS` | 自定義 Webhook（支持釘釘等，多個用逗號分隔） | 可選 |
 | `CUSTOM_WEBHOOK_BEARER_TOKEN` | 自定義 Webhook 的 Bearer Token（用於需要認證的 Webhook） | 可選 |
+| `LINE_NOTIFY_TOKEN` | LINE Notify Token（[獲取地址](https://notify-bot.line.me)，簡單快速） | 可選 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API Token（正式機器人模式） | 可選 |
+| `LINE_USER_ID` | LINE 接收者 ID（Messaging API 模式需要） | 可選 |
 | `SINGLE_STOCK_NOTIFY` | 單股推送模式：設為 `true` 則每分析完一隻股票立即推送 | 可選 |
 | `REPORT_TYPE` | 報告類型：`simple`(精簡) 或 `full`(完整)，Docker環境推薦設為 `full` | 可選 |
 | `ANALYSIS_DELAY` | 個股分析和大盤分析之間的延遲（秒），避免API限流，如 `10` | 可選 |
@@ -247,6 +250,7 @@ daily_stock_analysis/
 - [x] 郵件通知（SMTP）
 - [x] 自定義 Webhook（支持釘釘、Discord、Slack、Bark 等）
 - [x] iOS/Android 推送（Pushover）
+- [x] LINE 通知（Notify 或 Messaging API）
 - [x] 釘釘機器人 （已支持命令交互 >> [相關配置](bot/dingding-bot-config.md)）
 ### 🤖 AI 模型支持
 - [x] Google Gemini（主力，免費額度）

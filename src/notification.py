@@ -54,6 +54,7 @@ class NotificationChannel(Enum):
     CUSTOM = "custom"      # 自定義 Webhook
     DISCORD = "discord"    # Discord 機器人 (Bot)
     ASTRBOT = "astrbot"
+    LINE = "line"          # LINE (Notify 或 Messaging API)
     UNKNOWN = "unknown"    # 未知
 
 
@@ -102,6 +103,7 @@ class ChannelDetector:
             NotificationChannel.CUSTOM: "自定義Webhook",
             NotificationChannel.DISCORD: "Discord機器人",
             NotificationChannel.ASTRBOT: "ASTRBOT機器人",
+            NotificationChannel.LINE: "LINE通知",
             NotificationChannel.UNKNOWN: "未知渠道",
         }
         return names.get(channel, "未知渠道")
@@ -179,6 +181,13 @@ class NotificationService:
             'astrbot_url': getattr(config, 'astrbot_url', None),
             'astrbot_token': getattr(config, 'astrbot_token', None),
         }
+
+        # LINE 配置
+        self._line_config = {
+            'channel_access_token': getattr(config, 'line_channel_access_token', None),
+            'user_id': getattr(config, 'line_user_id', None),
+            'notify_token': getattr(config, 'line_notify_token', None),
+        }
         
         # 消息長度限制（字節）
         self._feishu_max_bytes = getattr(config, 'feishu_max_bytes', 20000)
@@ -239,6 +248,10 @@ class NotificationService:
         # AstrBot
         if self._is_astrbot_configured():
             channels.append(NotificationChannel.ASTRBOT)
+        
+        # LINE
+        if self._is_line_configured():
+            channels.append(NotificationChannel.LINE)
         return channels
     
     def _is_telegram_configured(self) -> bool:
@@ -265,6 +278,12 @@ class NotificationService:
     def _is_pushover_configured(self) -> bool:
         """檢查 Pushover 配置是否完整"""
         return bool(self._pushover_config['user_key'] and self._pushover_config['api_token'])
+    
+    def _is_line_configured(self) -> bool:
+        """檢查 LINE 配置是否完整（支持 Messaging API 或 Notify）"""
+        messaging_ok = bool(self._line_config['channel_access_token'] and self._line_config['user_id'])
+        notify_ok = bool(self._line_config['notify_token'])
+        return messaging_ok or notify_ok
     
     def is_available(self) -> bool:
         """檢查通知服務是否可用（至少有一個渠道或上下文渠道）"""
@@ -2835,6 +2854,112 @@ class NotificationService:
         except Exception as e:
             logger.error(f"AstrBot 發送異常: {e}")
             return False
+
+    def send_to_line(self, content: str) -> bool:
+        """
+        推送消息到 LINE (支持 Messaging API 或 LINE Notify)
+        
+        Args:
+            content: 消息內容
+            
+        Returns:
+            是否發送成功
+        """
+        # 優先使用 Messaging API (功能較全，支持機器人身份)
+        if self._line_config['channel_access_token'] and self._line_config['user_id']:
+            return self._send_line_messaging_api(content)
+        
+        # 其次使用 LINE Notify (簡單，僅支持文字)
+        if self._line_config['notify_token']:
+            return self._send_line_notify(content)
+        
+        logger.warning("LINE 配置不完整，跳過推送")
+        return False
+
+    def _send_line_messaging_api(self, content: str) -> bool:
+        """使用 LINE Messaging API 發送消息"""
+        try:
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {self._line_config["channel_access_token"]}'
+            }
+            
+            # LINE 每段消息限制 5000 字
+            chunks = []
+            if len(content) > 4900:
+                # 簡單分塊
+                for i in range(0, len(content), 4900):
+                    chunks.append(content[i:i+4900])
+            else:
+                chunks = [content]
+            
+            success = True
+            for chunk in chunks:
+                payload = {
+                    'to': self._line_config['user_id'],
+                    'messages': [
+                        {
+                            'type': 'text',
+                            'text': chunk
+                        }
+                    ]
+                }
+                
+                response = requests.post(
+                    'https://api.line.me/v2/bot/message/push',
+                    headers=headers,
+                    json=payload,
+                    timeout=10
+                )
+                
+                if response.status_code != 200:
+                    logger.error(f"LINE Messaging API 發送失敗: {response.status_code} {response.text}")
+                    success = False
+            
+            if success:
+                logger.info("LINE Messaging API 消息發送成功")
+            return success
+            
+        except Exception as e:
+            logger.error(f"LINE Messaging API 發送異常: {e}")
+            return False
+
+    def _send_line_notify(self, content: str) -> bool:
+        """使用 LINE Notify 發送消息"""
+        try:
+            headers = {
+                'Authorization': f'Bearer {self._line_config["notify_token"]}'
+            }
+            
+            # LINE Notify 限制 1000 字
+            chunks = []
+            if len(content) > 950:
+                for i in range(0, len(content), 950):
+                    chunks.append(content[i:i+950])
+            else:
+                chunks = [content]
+            
+            success = True
+            for chunk in chunks:
+                payload = {'message': chunk}
+                response = requests.post(
+                    'https://notify-api.line.me/api/notify',
+                    headers=headers,
+                    data=payload,
+                    timeout=10
+                )
+                
+                if response.status_code != 200:
+                    logger.error(f"LINE Notify 發送失敗: {response.status_code} {response.text}")
+                    success = False
+            
+            if success:
+                logger.info("LINE Notify 消息發送成功")
+            return success
+            
+        except Exception as e:
+            logger.error(f"LINE Notify 發送異常: {e}")
+            return False
     
     def send(self, content: str) -> bool:
         """
@@ -2884,6 +3009,8 @@ class NotificationService:
                     result = self.send_to_discord(content)
                 elif channel == NotificationChannel.ASTRBOT:
                     result = self.send_to_astrbot(content)
+                elif channel == NotificationChannel.LINE:
+                    result = self.send_to_line(content)
                 else:
                     logger.warning(f"不支持的通知渠道: {channel}")
                     result = False

@@ -103,6 +103,11 @@ class Config:
     astrbot_token: Optional[str] = None
     astrbot_url: Optional[str] = None
 
+    # LINE 通知配置
+    line_channel_access_token: Optional[str] = None  # LINE Messaging API Token
+    line_user_id: Optional[str] = None              # LINE 用戶/群組 ID
+    line_notify_token: Optional[str] = None         # LINE Notify Token (簡單通知用)
+
     # 單股推送模式：每分析完一隻股票立即推送，而不是匯總後推送
     single_stock_notify: bool = False
 
@@ -346,9 +351,11 @@ class Config:
             custom_webhook_bearer_token=os.getenv('CUSTOM_WEBHOOK_BEARER_TOKEN'),
             discord_bot_token=os.getenv('DISCORD_BOT_TOKEN'),
             discord_main_channel_id=os.getenv('DISCORD_MAIN_CHANNEL_ID'),
-            discord_webhook_url=os.getenv('DISCORD_WEBHOOK_URL'),
             astrbot_url=os.getenv('ASTRBOT_URL'),
             astrbot_token=os.getenv('ASTRBOT_TOKEN'),
+            line_channel_access_token=os.getenv('LINE_CHANNEL_ACCESS_TOKEN'),
+            line_user_id=os.getenv('LINE_USER_ID'),
+            line_notify_token=os.getenv('LINE_NOTIFY_TOKEN'),
             single_stock_notify=os.getenv('SINGLE_STOCK_NOTIFY', 'false').lower() == 'true',
             report_type=os.getenv('REPORT_TYPE', 'simple').lower(),
             analysis_delay=float(os.getenv('ANALYSIS_DELAY', '0')),
@@ -475,7 +482,9 @@ class Config:
             self.pushplus_token or
             (self.custom_webhook_urls and self.custom_webhook_bearer_token) or
             (self.discord_bot_token and self.discord_main_channel_id) or
-            self.discord_webhook_url
+            self.discord_webhook_url or
+            self.line_notify_token or
+            (self.line_channel_access_token and self.line_user_id)
         )
         if not has_notification:
             warnings.append("提示：未配置通知渠道，將不發送推送通知")
