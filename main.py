@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-A股自选股智能分析系统 - 主调度程序
+A股自選股智能分析系統 - 主調度程序
 ===================================
 
-职责：
-1. 协调各模块完成股票分析流程
-2. 实现低并发的线程池调度
-3. 全局异常处理，确保单股失败不影响整体
+職責：
+1. 協調各模組完成股票分析流程
+2. 實現低併發的線程池調度
+3. 全域異常處理，確保單股失敗不影響整體
 4. 提供命令行入口
 
 使用方式：
-    python main.py              # 正常运行
-    python main.py --debug      # 调试模式
-    python main.py --dry-run    # 仅获取数据不分析
+    python main.py              # 正常運行
+    python main.py --debug      # 偵錯模式
+    python main.py --dry-run    # 僅獲取數據不分析
 
 交易理念（已融入分析）：
-- 严进策略：不追高，乖离率 > 5% 不买入
-- 趋势交易：只做 MA5>MA10>MA20 多头排列
-- 效率优先：关注筹码集中度好的股票
-- 买点偏好：缩量回踩 MA5/MA10 支撑
+- 嚴進策略：不追高，乖離率 > 5% 不買入
+- 趨勢交易：只做 MA5>MA10>MA20 多頭排列
+- 效率優先：關注籌碼集中度好的股票
+- 買點偏好：縮量回調至 MA5/MA10 支撐
 """
 import os
 from src.config import setup_env
@@ -124,20 +124,20 @@ logger = logging.getLogger(__name__)
 
 
 def parse_arguments() -> argparse.Namespace:
-    """解析命令行参数"""
+    """解析命令行參數"""
     parser = argparse.ArgumentParser(
-        description='A股自选股智能分析系统',
+        description='A股自選股智能分析系統',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog='''
 示例:
-  python main.py                    # 正常运行
-  python main.py --debug            # 调试模式
-  python main.py --dry-run          # 仅获取数据，不进行 AI 分析
+  python main.py                    # 正常運行
+  python main.py --debug            # 偵錯模式
+  python main.py --dry-run          # 僅獲取數據，不進行 AI 分析
   python main.py --stocks 600519,000001  # 指定分析特定股票
-  python main.py --no-notify        # 不发送推送通知
-  python main.py --single-notify    # 启用单股推送模式（每分析完一只立即推送）
-  python main.py --schedule         # 启用定时任务模式
-  python main.py --market-review    # 仅运行大盘复盘
+  python main.py --no-notify        # 不發送推送通知
+  python main.py --single-notify    # 啟用單股推送模式（每分析完一隻立即推送）
+  python main.py --schedule         # 啟用定時任務模式
+  python main.py --market-review    # 僅運行大盤複盤
         '''
     )
     
@@ -272,23 +272,23 @@ def run_full_analysis(
             if review_result:
                 market_report = review_result
         
-        # 输出摘要
+        # 輸出摘要
         if results:
-            logger.info("\n===== 分析结果摘要 =====")
+            logger.info("\n===== 分析結果摘要 =====")
             for r in sorted(results, key=lambda x: x.sentiment_score, reverse=True):
                 emoji = r.get_emoji()
                 logger.info(
                     f"{emoji} {r.name}({r.code}): {r.operation_advice} | "
-                    f"评分 {r.sentiment_score} | {r.trend_prediction}"
+                    f"評分 {r.sentiment_score} | {r.trend_prediction}"
                 )
         
-        logger.info("\n任务执行完成")
+        logger.info("\n任務執行完成")
 
-        # === 新增：生成飞书云文档 ===
+        # === 新增：生成飛書雲文檔 ===
         try:
             feishu_doc = FeishuDocManager()
             if feishu_doc.is_configured() and (results or market_report):
-                logger.info("正在创建飞书云文档...")
+                logger.info("正在建立飛書雲文檔...")
 
                 # 1. 准备标题 "01-01 13:01大盘复盘"
                 tz_cn = timezone(timedelta(hours=8))
@@ -372,8 +372,8 @@ def main() -> int:
     setup_logging(debug=args.debug, log_dir=config.log_dir)
     
     logger.info("=" * 60)
-    logger.info("A股自选股智能分析系统 启动")
-    logger.info(f"运行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    logger.info("A股自選股智能分析系統 啟動")
+    logger.info(f"運行時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 60)
     
     # 验证配置

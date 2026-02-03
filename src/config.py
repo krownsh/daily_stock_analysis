@@ -90,7 +90,7 @@ class Config:
     pushover_api_token: Optional[str] = None  # 應用 API Token
     
     # 自定義 Webhook（支持多個，逗號分隔）
-    # 適用於：釘釘、Discord、Slack、自建服務等任意支持 POST JSON 的 Webhook
+    # 適用於：釘釘、Discord、Slack、Bark、自建服務等任意支持 POST JSON 的 Webhook
     custom_webhook_urls: List[str] = field(default_factory=list)
     custom_webhook_bearer_token: Optional[str] = None  # Bearer Token（用於需要認證的 Webhook）
     
@@ -117,7 +117,7 @@ class Config:
     # PushPlus 推送配置
     pushplus_token: Optional[str] = None  # PushPlus Token
 
-    # 分析間隔時間（秒）- 用於避免API限流
+    # 分析間隔時間（秒）- 用於避免 API 限流
     analysis_delay: float = 0.0  # 個股分析與大盤分析之間的延遲
 
     # 消息長度限制（字節）- 超長自動分批發送
@@ -145,7 +145,7 @@ class Config:
     schedule_enabled: bool = False            # 是否啟用定時任務
     schedule_time: str = "18:00"              # 每日推送時間（HH:MM 格式）
     market_review_enabled: bool = True        # 是否啟用大盤複盤
-
+    
     # === 即時行情增強數據配置 ===
     # 即時行情開關（關閉後使用歷史收盤價進行分析）
     enable_realtime_quote: bool = True
@@ -156,7 +156,7 @@ class Config:
     # - tencent: 騰訊財經，有量比/換手率/市盈率等，單股查詢穩定（推薦）
     # - akshare_sina: 新浪財經，基本行情穩定，但無量比
     # - efinance/akshare_em: 東財全量介面，數據最全但容易被封
-    # - tushare: Tushare Pro，需要2000積分，數據全面（付費用戶可優先使用）
+    # - tushare: Tushare Pro，需要 2000 積分，數據全面（付費用戶可優先使用）
     realtime_source_priority: str = "tencent,akshare_sina,efinance,akshare_em"
     # 即時行情快取時間（秒）
     realtime_cache_ttl: int = 600
@@ -194,12 +194,12 @@ class Config:
     # 飛書機器人（事件訂閱）- 已有 feishu_app_id, feishu_app_secret
     feishu_verification_token: Optional[str] = None  # 事件訂閱驗證 Token
     feishu_encrypt_key: Optional[str] = None         # 消息加密金鑰（可選）
-    feishu_stream_enabled: bool = False              # 是否啟用 Stream 長連接模式（無需公網IP）
+    feishu_stream_enabled: bool = False              # 是否啟用 Stream 長連接模式（無需公網 IP）
     
     # 釘釘機器人
     dingtalk_app_key: Optional[str] = None      # 應用 AppKey
     dingtalk_app_secret: Optional[str] = None   # 應用 AppSecret
-    dingtalk_stream_enabled: bool = False       # 是否啟用 Stream 模式（無需公網IP）
+    dingtalk_stream_enabled: bool = False       # 是否啟用 Stream 模式（無需公網 IP）
     
     # 企業微信機器人（回調模式）
     wecom_corpid: Optional[str] = None              # 企業 ID
@@ -211,7 +211,7 @@ class Config:
     telegram_webhook_secret: Optional[str] = None   # Webhook 金鑰
     
     # Discord 機器人擴充配置
-    discord_bot_status: str = "A股智能分析 | /help"  # 機器人狀態資訊
+    # (重複定義，已刪除)
     
     # 單例實例存儲
     _instance: Optional['Config'] = None
@@ -406,7 +406,7 @@ class Config:
             # - tencent: 騰訊財經，有量比/換手率/PE/PB等，單股查詢穩定（推薦）
             # - akshare_sina: 新浪財經，基本行情穩定，但無量比
             # - efinance/akshare_em: 東財全量介面，數據最全但容易被封
-            # - tushare: Tushare Pro，需要2000積分，數據全面
+            # - tushare: Tushare Pro，需要 2000 積分，數據全面
             realtime_source_priority=os.getenv('REALTIME_SOURCE_PRIORITY', 'tencent,akshare_sina,efinance,akshare_em'),
             realtime_cache_ttl=int(os.getenv('REALTIME_CACHE_TTL', '600')),
             circuit_breaker_cooldown=int(os.getenv('CIRCUIT_BREAKER_COOLDOWN', '300'))

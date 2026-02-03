@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-YfinanceFetcher - 兜底数据源 (Priority 4)
+YfinanceFetcher - 兜底資料來源 (Priority 4)
 ===================================
 
-数据来源：Yahoo Finance（通过 yfinance 库）
-特点：国际数据源、可能有延迟或缺失
-定位：当所有国内数据源都失败时的最后保障
+數據來源：Yahoo Finance（通過 yfinance 庫）
+特點：國際資料來源、可能有延遲或缺失
+定位：當所有國內資料來源都失敗時的最後保障
 
-关键策略：
-1. 自动将 A 股代码转换为 yfinance 格式（.SS / .SZ）
-2. 处理 Yahoo Finance 的数据格式差异
-3. 失败后指数退避重试
+關鍵策略：
+1. 自動將 A 股代碼轉換為 yfinance 格式（.SS / .SZ）
+2. 處理 Yahoo Finance 的數據格式差異
+3. 失敗後指數退避重試
 """
 
 import logging
@@ -37,20 +37,20 @@ logger = logging.getLogger(__name__)
 
 class YfinanceFetcher(BaseFetcher):
     """
-    Yahoo Finance 数据源实现
+    Yahoo Finance 資料來源實現
     
-    优先级：4（最低，作为兜底）
-    数据来源：Yahoo Finance
+    優先級：4（最低，作為兜底）
+    數據來源：Yahoo Finance
     
-    关键策略：
-    - 自动转换股票代码格式
-    - 处理时区和数据格式差异
-    - 失败后指数退避重试
+    關鍵策略：
+    - 自動轉換股票代碼格式
+    - 處理時區和數據格式差異
+    - 失敗後指數退避重試
     
-    注意事项：
-    - A 股数据可能有延迟
-    - 某些股票可能无数据
-    - 数据精度可能与国内源略有差异
+    注意事項：
+    - A 股數據可能有延遲
+    - 某些股票可能無數據
+    - 數據精度可能與國內源略有差異
     """
     
     name = "YfinanceFetcher"
@@ -62,19 +62,19 @@ class YfinanceFetcher(BaseFetcher):
     
     def _convert_stock_code(self, stock_code: str) -> str:
         """
-        转换股票代码为 Yahoo Finance 格式
-
-        Yahoo Finance 代码格式：
-        - A股沪市：600519.SS (Shanghai Stock Exchange)
+        轉換股票代碼為 Yahoo Finance 格式
+        
+        Yahoo Finance 代碼格式：
+        - A股滬市：600519.SS (Shanghai Stock Exchange)
         - A股深市：000001.SZ (Shenzhen Stock Exchange)
         - 港股：0700.HK (Hong Kong Stock Exchange)
-        - 美股：AAPL, TSLA, GOOGL (无需后缀)
-
+        - 美股：AAPL, TSLA, GOOGL (無需後綴)
+        
         Args:
-            stock_code: 原始代码，如 '600519', 'hk00700', 'AAPL'
-
+            stock_code: 原始代碼，如 '600519', 'hk00700', 'AAPL'
+            
         Returns:
-            Yahoo Finance 格式代码
+            Yahoo Finance 格式代碼
 
         Examples:
             >>> fetcher._convert_stock_code('600519')
@@ -124,14 +124,14 @@ class YfinanceFetcher(BaseFetcher):
     )
     def _fetch_raw_data(self, stock_code: str, start_date: str, end_date: str) -> pd.DataFrame:
         """
-        从 Yahoo Finance 获取原始数据
+        從 Yahoo Finance 獲取原始數據
         
-        使用 yfinance.download() 获取历史数据
+        使用 yfinance.download() 獲取歷史數據
         
         流程：
-        1. 转换股票代码格式
-        2. 调用 yfinance API
-        3. 处理返回数据
+        1. 轉換股票代碼格式
+        2. 調用 yfinance API
+        3. 處理返回數據
         """
         import yfinance as yf
         
@@ -221,7 +221,7 @@ class YfinanceFetcher(BaseFetcher):
 
     def get_main_indices(self) -> Optional[List[Dict[str, Any]]]:
         """
-        获取主要指数行情 (Yahoo Finance)
+        獲取主要指數行情 (Yahoo Finance)
         """
         import yfinance as yf
 
@@ -400,7 +400,7 @@ class YfinanceFetcher(BaseFetcher):
             return quote
             
         except Exception as e:
-            logger.warning(f"[Yfinance] 获取美股 {stock_code} 实时行情失败: {e}")
+            logger.warning(f"[Yfinance] 獲取美股 {stock_code} 即時行情失敗: {e}")
             return None
 
 

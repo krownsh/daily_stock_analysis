@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-AkshareFetcher - 主数据源 (Priority 1)
+AkshareFetcher - 主資料來源 (Priority 1)
 ===================================
 
-数据来源：
-1. 东方财富爬虫（通过 akshare 库） - 默认数据源
-2. 新浪财经接口 - 备选数据源
-3. 腾讯财经接口 - 备选数据源
+數據來源：
+1. 東方財富爬蟲（通過 akshare 庫） - 預設資料來源
+2. 新浪財經介面 - 備選資料來源
+3. 騰訊財經介面 - 備選資料來源
 
-特点：免费、无需 Token、数据全面
-风险：爬虫机制易被反爬封禁
+特點：免費、無需 Token、數據全面
+風險：爬蟲機制易被反爬封禁
 
 防封禁策略：
-1. 每次请求前随机休眠 2-5 秒
-2. 随机轮换 User-Agent
-3. 使用 tenacity 实现指数退避重试
-4. 熔断器机制：连续失败后自动冷却
+1. 每次請求前隨機休眠 2-5 秒
+2. 隨機輪長 User-Agent
+3. 使用 tenacity 實現指數退避重試
+4. 熔斷器機制：連續失敗後自動冷卻
 
-增强数据：
-- 实时行情：量比、换手率、市盈率、市净率、总市值、流通市值
-- 筹码分布：获利比例、平均成本、筹码集中度
+增強數據：
+- 即時行情：量比、換手率、市盈率、市淨率、總市值、流通市值
+- 籌碼分佈：獲利比例、平均成本、籌碼集中度
 """
 
 import logging
@@ -44,7 +44,7 @@ from .base import BaseFetcher, DataFetchError, RateLimitError, STANDARD_COLUMNS
 from .realtime_types import (
     UnifiedRealtimeQuote, ChipDistribution, RealtimeSource,
     get_realtime_circuit_breaker, get_chip_circuit_breaker,
-    safe_float, safe_int  # 使用统一的类型转换函数
+    safe_float, safe_int  # 使用統一的類型轉換函數
 )
 
 
@@ -65,15 +65,15 @@ USER_AGENTS = [
 ]
 
 
-# 缓存实时行情数据（避免重复请求）
-# TTL 设为 20 分钟 (1200秒)：
-# - 批量分析场景：通常 30 只股票在 5 分钟内分析完，20 分钟足够覆盖
-# - 实时性要求：股票分析不需要秒级实时数据，20 分钟延迟可接受
-# - 防封禁：减少 API 调用频率
+# 快取即時行情數據（避免重複請求）
+# TTL 設為 20 分鐘 (1200秒)：
+# - 批量分析場景：通常 30 只股票在 5 分鐘內分析完，20 分鐘足夠覆蓋
+# - 即時性要求：股票分析不需要秒級即時數據，20 分鐘延遲可接受
+# - 防封禁：減少 API 調用頻率
 _realtime_cache: Dict[str, Any] = {
     'data': None,
     'timestamp': 0,
-    'ttl': 1200  # 20分钟缓存有效期
+    'ttl': 1200  # 20分鐘快取有效期
 }
 
 # ETF 实时行情缓存
@@ -135,10 +135,10 @@ def _is_us_code(stock_code: str) -> bool:
     - 可能包含 '.' 用于特殊股票类别，如 'BRK.B' (伯克希尔B类股)
 
     Args:
-        stock_code: 股票代码
+        stock_code: 股票代碼
 
     Returns:
-        True 表示是美股代码，False 表示不是美股代码
+        True 表示是美股代碼，False 表示不是美股代碼
 
     Examples:
         >>> _is_us_code('AAPL')
@@ -320,10 +320,10 @@ class AkshareFetcher(BaseFetcher):
             api_elapsed = _time.time() - api_start
 
             if df is not None and not df.empty:
-                logger.info(f"[API返回] ak.stock_zh_a_hist 成功: {len(df)} 行, 耗时 {api_elapsed:.2f}s")
+                logger.info(f"[API返回] ak.stock_zh_a_hist 成功: {len(df)} 行, 耗時 {api_elapsed:.2f}s")
                 return df
             else:
-                logger.warning(f"[API返回] ak.stock_zh_a_hist 返回空数据")
+                logger.warning(f"[API返回] ak.stock_zh_a_hist 返回空數據")
                 return pd.DataFrame()
 
         except Exception as e:
