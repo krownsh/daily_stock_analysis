@@ -19,3 +19,8 @@
 - [x] 資料庫結構調整：新增 `foreign_buy`, `it_buy`, `dealers_buy`, `margin_buy`, `short_buy` 欄位以支援台股籌碼分析
 - [x] `GeminiAnalyzer` 更新：在 Prompt 中動態注入台股特有的籌碼與基本面數據 (PE/PB/市值)
 - [x] `DataFetcherManager` 集成：完美支援 4 位數台股代碼自動識別與故障切換
+
+## 已完成的擴展任務 (2026-02-04)
+- [x] 深度整合 FinMind API：實作 `FinMindFetcher` 補齊台股三大法人、融資券與月營收 YoY 數據
+- [x] 市場分析全局化：將 `MarketAnalyzer` (大盤複盤) 從 A 股擴展至台股，支援加權指數/櫃買指數與全市場漲跌統計
+- [x] 市場新聞增強：新增台股盤後與熱點板塊搜尋邏輯，AI 提示詞全面支援台股特徵分析

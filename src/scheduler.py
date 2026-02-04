@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 ===================================
-定时调度模块
+定時調度模組
 ===================================
 
-职责：
-1. 支持每日定时执行股票分析
-2. 支持定时执行大盘复盘
-3. 优雅处理信号，确保可靠退出
+職責：
+1. 支援每日定時執行股票分析
+2. 支援定時執行大盤複盤
+3. 優雅處理信號，確保可靠退出
 
-依赖：
-- schedule: 轻量级定时任务库
+依賴：
+- schedule: 輕量級定時任務庫
 """
 
 import logging
@@ -26,56 +26,56 @@ logger = logging.getLogger(__name__)
 
 class GracefulShutdown:
     """
-    优雅退出处理器
+    優雅退出處理器
     
-    捕获 SIGTERM/SIGINT 信号，确保任务完成后再退出
+    捕獲 SIGTERM/SIGINT 信號，確保任務完成後再退出
     """
     
     def __init__(self):
         self.shutdown_requested = False
         self._lock = threading.Lock()
         
-        # 注册信号处理器
+        # 註冊信號處理器
         signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
     
     def _signal_handler(self, signum, frame):
-        """信号处理函数"""
+        """信號處理函數"""
         with self._lock:
             if not self.shutdown_requested:
-                logger.info(f"收到退出信号 ({signum})，等待当前任务完成...")
+                logger.info(f"收到退出信號 ({signum})，等待當前任務完成...")
                 self.shutdown_requested = True
     
     @property
     def should_shutdown(self) -> bool:
-        """检查是否应该退出"""
+        """檢查是否應該退出"""
         with self._lock:
             return self.shutdown_requested
 
 
 class Scheduler:
     """
-    定时任务调度器
+    定時任務調度器
     
-    基于 schedule 库实现，支持：
-    - 每日定时执行
-    - 启动时立即执行
-    - 优雅退出
+    基於 schedule 庫實現，支援：
+    - 每日定時執行
+    - 啟動時立即執行
+    - 優雅退出
     """
     
     def __init__(self, schedule_time: str = "18:00"):
         """
-        初始化调度器
+        初始化調度器
         
         Args:
-            schedule_time: 每日执行时间，格式 "HH:MM"
+            schedule_time: 每日執行時間，格式 "HH:MM"
         """
         try:
             import schedule
             self.schedule = schedule
         except ImportError:
-            logger.error("schedule 库未安装，请执行: pip install schedule")
-            raise ImportError("请安装 schedule 库: pip install schedule")
+            logger.error("schedule 庫未安裝，請執行: pip install schedule")
+            raise ImportError("請安裝 schedule 庫: pip install schedule")
         
         self.schedule_time = schedule_time
         self.shutdown_handler = GracefulShutdown()
@@ -84,69 +84,69 @@ class Scheduler:
         
     def set_daily_task(self, task: Callable, run_immediately: bool = True):
         """
-        设置每日定时任务
+        設置每日定時任務
         
         Args:
-            task: 要执行的任务函数（无参数）
-            run_immediately: 是否在设置后立即执行一次
+            task: 要執行的任務函數（無參數）
+            run_immediately: 是否在設置後立即執行一次
         """
         self._task_callback = task
         
-        # 设置每日定时任务
+        # 設置每日定時任務
         self.schedule.every().day.at(self.schedule_time).do(self._safe_run_task)
-        logger.info(f"已设置每日定时任务，执行时间: {self.schedule_time}")
+        logger.info(f"已設置每日定時任務，執行時間: {self.schedule_time}")
         
         if run_immediately:
-            logger.info("立即执行一次任务...")
+            logger.info("立即執行一次任務...")
             self._safe_run_task()
     
     def _safe_run_task(self):
-        """安全执行任务（带异常捕获）"""
+        """安全執行任務（帶異常捕獲）"""
         if self._task_callback is None:
             return
         
         try:
             logger.info("=" * 50)
-            logger.info(f"定时任务开始执行 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"定時任務開始執行 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             logger.info("=" * 50)
             
             self._task_callback()
             
-            logger.info(f"定时任务执行完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.info(f"定時任務執行完成 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             
         except Exception as e:
-            logger.exception(f"定时任务执行失败: {e}")
+            logger.exception(f"定時任務執行失敗: {e}")
     
     def run(self):
         """
-        运行调度器主循环
+        運行調度器主迴圈
         
-        阻塞运行，直到收到退出信号
+        阻塞運行，直到收到退出信號
         """
         self._running = True
-        logger.info("调度器开始运行...")
-        logger.info(f"下次执行时间: {self._get_next_run_time()}")
+        logger.info("調度器開始運行...")
+        logger.info(f"下次執行時間: {self._get_next_run_time()}")
         
         while self._running and not self.shutdown_handler.should_shutdown:
             self.schedule.run_pending()
-            time.sleep(30)  # 每30秒检查一次
+            time.sleep(30)  # 每30秒檢查一次
             
-            # 每小时打印一次心跳
+            # 每小時打印一次心跳
             if datetime.now().minute == 0 and datetime.now().second < 30:
-                logger.info(f"调度器运行中... 下次执行: {self._get_next_run_time()}")
+                logger.info(f"調度器運行中... 下次執行: {self._get_next_run_time()}")
         
-        logger.info("调度器已停止")
+        logger.info("調度器已停止")
     
     def _get_next_run_time(self) -> str:
-        """获取下次执行时间"""
+        """獲取下次執行時間"""
         jobs = self.schedule.get_jobs()
         if jobs:
             next_run = min(job.next_run for job in jobs)
             return next_run.strftime('%Y-%m-%d %H:%M:%S')
-        return "未设置"
+        return "未設置"
     
     def stop(self):
-        """停止调度器"""
+        """停止調度器"""
         self._running = False
 
 
@@ -156,12 +156,12 @@ def run_with_schedule(
     run_immediately: bool = True
 ):
     """
-    便捷函数：使用定时调度运行任务
+    便捷函數：使用定時調度運行任務
     
     Args:
-        task: 要执行的任务函数
-        schedule_time: 每日执行时间
-        run_immediately: 是否立即执行一次
+        task: 要執行的任務函數
+        schedule_time: 每日執行時間
+        run_immediately: 是否立即執行一次
     """
     scheduler = Scheduler(schedule_time=schedule_time)
     scheduler.set_daily_task(task, run_immediately=run_immediately)
@@ -169,16 +169,16 @@ def run_with_schedule(
 
 
 if __name__ == "__main__":
-    # 测试定时调度
+    # 測試定時調度
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s | %(levelname)-8s | %(name)-20s | %(message)s',
     )
     
     def test_task():
-        print(f"任务执行中... {datetime.now()}")
+        print(f"任務執行中... {datetime.now()}")
         time.sleep(2)
-        print("任务完成!")
+        print("任務完成!")
     
-    print("启动测试调度器（按 Ctrl+C 退出）")
+    print("啟動測試調度器（按 Ctrl+C 退出）")
     run_with_schedule(test_task, schedule_time="23:59", run_immediately=True)

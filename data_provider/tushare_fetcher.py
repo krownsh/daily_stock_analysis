@@ -420,7 +420,7 @@ class TushareFetcher(BaseFetcher):
             stock_code: 股票代碼
 
         Returns:
-            UnifiedRealtimeQuote 對象，失敗返回 None
+            UnifiedRealtimeQuote 物件，失敗返回 None
         """
         if self._api is None:
             return None
@@ -503,7 +503,7 @@ class TushareFetcher(BaseFetcher):
                 change_amount = price - pre_close
                 change_pct = (change_amount / pre_close) * 100
 
-            # 構建統一對象
+            # 構建統一物件
             return UnifiedRealtimeQuote(
                 code=stock_code,
                 name=str(row['name']),
@@ -665,9 +665,9 @@ class TushareFetcher(BaseFetcher):
 
     def get_sector_rankings(self, n: int = 5) -> Optional[Tuple[list, list]]:
         """
-        獲取板块漲跌榜 (Tushare Pro)
+        獲取板塊漲跌榜 (Tushare Pro)
         """
-        # Tushare 獲取板块數據較複雜，暫時返回 None，讓 AkShare 處理
+        # Tushare 獲取板塊數據較複雜，暫時返回 None，讓 AkShare 處理
         return None
 
 

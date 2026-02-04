@@ -438,6 +438,13 @@ class DataFetcherManager:
         """返回可用數據源名稱列表"""
         return [f.name for f in self._fetchers]
     
+    def get_fetcher(self, name: str) -> Optional[BaseFetcher]:
+        """根據名稱獲取特定數據源實例"""
+        for f in self._fetchers:
+            if f.name == name:
+                return f
+        return None
+    
     def prefetch_realtime_quotes(self, stock_codes: List[str]) -> int:
         """
         批量預取即時行情數據（在分析開始前調用）

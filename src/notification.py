@@ -1198,7 +1198,7 @@ class NotificationService:
             logger.warning("企業微信 Webhook 未配置，跳過推送")
             return False
         
-        max_bytes = self._wechat_max_bytes  # 从配置读取，默认 4000 字节
+        max_bytes = self._wechat_max_bytes  # 從配置讀取，默認 4000 字節
         
         # 檢查字節長度，超長則分批發送
         content_bytes = len(content.encode('utf-8'))
@@ -1231,8 +1231,8 @@ class NotificationService:
             """獲取字串的 UTF-8 字節數"""
             return len(s.encode('utf-8'))
         
-        # 智能分割：优先按 "---" 分隔（股票之间的分隔线）
-        # 其次尝试各级标题分割
+        # 智能分割：優先按 "---" 分隔（股票之間的分隔線）
+        # 其次嘗試各級標題分割
         if "\n---\n" in content:
             sections = content.split("\n---\n")
             separator = "\n---\n"
@@ -1247,7 +1247,7 @@ class NotificationService:
             sections = [parts[0]] + [f"## {p}" for p in parts[1:]]
             separator = "\n"
         elif "\n**" in content:
-            # 按 ** 加粗标题分割 (兼容 AI 未输出标准 Markdown 标题的情况)
+            # 按 ** 加粗標題分割 (兼容 AI 未輸出標準 Markdown 標題的情況)
             parts = content.split("\n**")
             sections = [parts[0]] + [f"**{p}" for p in parts[1:]]
             separator = "\n"
@@ -1263,7 +1263,7 @@ class NotificationService:
         for section in sections:
             section_bytes = get_bytes(section) + separator_bytes
             
-            # 如果单个 section 就超长，需要强制截断
+            # 如果單個 section 就超長，需要強制截斷
             if section_bytes > max_bytes:
                 # 先发送当前积累的内容
                 if current_chunk:
@@ -1277,7 +1277,7 @@ class NotificationService:
                 chunks.append(truncated)
                 continue
             
-            # 检查加入后是否超长
+            # 檢查加入後是否超長
             if current_bytes + section_bytes > max_bytes:
                 # 保存当前块，开始新块
                 if current_chunk:
@@ -1495,13 +1495,13 @@ class NotificationService:
             """獲取字串的 UTF-8 字節數"""
             return len(s.encode('utf-8'))
         
-        # 智能分割：优先按 "---" 分隔（股票之间的分隔线）
-        # 如果没有分隔线，按 "### " 标题分割（每只股票的标题）
+        # 智能分割：優先按 "---" 分隔（股票之間的分隔線）
+        # 如果沒有分隔線，按 "### " 標題分割（每隻股票的標題）
         if "\n---\n" in content:
             sections = content.split("\n---\n")
             separator = "\n---\n"
         elif "\n### " in content:
-            # 按 ### 分割，但保留 ### 前缀
+            # 按 ### 分割，但保留 ### 前綴
             parts = content.split("\n### ")
             sections = [parts[0]] + [f"### {p}" for p in parts[1:]]
             separator = "\n"
@@ -1531,9 +1531,9 @@ class NotificationService:
                 chunks.append(truncated)
                 continue
             
-            # 检查加入后是否超长
+            # 檢查加入後是否超長
             if current_bytes + section_bytes > max_bytes:
-                # 保存当前块，开始新块
+                # 保存當前塊，開始新塊
                 if current_chunk:
                     chunks.append(separator.join(current_chunk))
                 current_chunk = [section]
@@ -1542,7 +1542,7 @@ class NotificationService:
                 current_chunk.append(section)
                 current_bytes += section_bytes
         
-        # 添加最后一块
+        # 添加最後一塊
         if current_chunk:
             chunks.append(separator.join(current_chunk))
         
@@ -1569,7 +1569,7 @@ class NotificationService:
             except Exception as e:
                 logger.error(f"飛書第 {i+1}/{total_chunks} 批發送異常: {e}")
             
-            # 批次间隔，避免触发频率限制
+            # 批次間隔，避免觸發頻率限制
             if i < total_chunks - 1:
                 time.sleep(1)
         
@@ -1662,7 +1662,7 @@ class NotificationService:
                 "header": {
                     "title": {
                         "tag": "plain_text",
-                        "content": "A股智能分析報告"
+                        "content": "A 股智能分析報告"
                     }
                 },
                 "elements": [
@@ -1920,36 +1920,36 @@ class NotificationService:
             是否發送成功
         """
         if not self._is_telegram_configured():
-            logger.warning("Telegram 配置不完整，跳过推送")
+            logger.warning("Telegram 配置不完整，跳過推送")
             return False
         
         bot_token = self._telegram_config['bot_token']
         chat_id = self._telegram_config['chat_id']
         
         try:
-            # Telegram API 端点
+            # Telegram API 端點
             api_url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
             
-            # Telegram 消息最大长度 4096 字符
+            # Telegram 消息最大長度 4096 字符
             max_length = 4096
             
             if len(content) <= max_length:
-                # 单条消息发送
+                # 單條消息發送
                 return self._send_telegram_message(api_url, chat_id, content)
             else:
-                # 分段发送长消息
+                # 分段發送長消息
                 return self._send_telegram_chunked(api_url, chat_id, content, max_length)
                 
         except Exception as e:
-            logger.error(f"发送 Telegram 消息失败: {e}")
+            logger.error(f"發送 Telegram 消息失敗: {e}")
             import traceback
             logger.debug(traceback.format_exc())
             return False
     
     def _send_telegram_message(self, api_url: str, chat_id: str, text: str) -> bool:
-        """发送单条 Telegram 消息"""
-        # 转换 Markdown 为 Telegram 支持的格式
-        # Telegram 的 Markdown 格式稍有不同，做简单处理
+        """發送單條 Telegram 消息"""
+        # 轉換 Markdown 為 Telegram 支持的格式
+        # Telegram 的 Markdown 格式稍有不同，做簡單處理
         telegram_text = self._convert_to_telegram_markdown(text)
         
         payload = {
@@ -1964,32 +1964,32 @@ class NotificationService:
         if response.status_code == 200:
             result = response.json()
             if result.get('ok'):
-                logger.info("Telegram 消息发送成功")
+                logger.info("Telegram 消息發送成功")
                 return True
             else:
-                error_desc = result.get('description', '未知错误')
-                logger.error(f"Telegram 返回错误: {error_desc}")
+                error_desc = result.get('description', '未知錯誤')
+                logger.error(f"Telegram 回傳錯誤: {error_desc}")
                 
-                # 如果 Markdown 解析失败，尝试纯文本发送
+                # 如果 Markdown 解析失敗，嘗試純文本發送
                 if 'parse' in error_desc.lower() or 'markdown' in error_desc.lower():
-                    logger.info("尝试使用纯文本格式重新发送...")
+                    logger.info("嘗試使用純文本格式重新發送...")
                     payload['parse_mode'] = None
                     payload['text'] = text  # 使用原始文本
                     del payload['parse_mode']
                     
                     response = requests.post(api_url, json=payload, timeout=10)
                     if response.status_code == 200 and response.json().get('ok'):
-                        logger.info("Telegram 消息发送成功（纯文本）")
+                        logger.info("Telegram 消息發送成功（純文本）")
                         return True
                 
                 return False
         else:
-            logger.error(f"Telegram 请求失败: HTTP {response.status_code}")
-            logger.error(f"响应内容: {response.text}")
+            logger.error(f"Telegram 請求失敗: HTTP {response.status_code}")
+            logger.error(f"響應內容: {response.text}")
             return False
     
     def _send_telegram_chunked(self, api_url: str, chat_id: str, content: str, max_length: int) -> bool:
-        """分段发送长 Telegram 消息"""
+        """分段發送長 Telegram 消息"""
         # 按段落分割
         sections = content.split("\n---\n")
         
@@ -2028,23 +2028,23 @@ class NotificationService:
     
     def _convert_to_telegram_markdown(self, text: str) -> str:
         """
-        将标准 Markdown 转换为 Telegram 支持的格式
+        將標準 Markdown 轉換為 Telegram 支持的格式
         
         Telegram Markdown 限制：
-        - 不支持 # 标题
+        - 不支持 # 標題
         - 使用 *bold* 而非 **bold**
         - 使用 _italic_ 
         """
         result = text
         
-        # 移除 # 标题标记（Telegram 不支持）
+        # 移除 # 標題標記（Telegram 不支持）
         result = re.sub(r'^#{1,6}\s+', '', result, flags=re.MULTILINE)
         
-        # 转换 **bold** 为 *bold*
+        # 轉換 **bold** 為 *bold*
         result = re.sub(r'\*\*(.+?)\*\*', r'*\1*', result)
         
-        # 转义特殊字符（Telegram Markdown 需要）
-        # 注意：不转义已经用于格式的 * _ `
+        # 轉義特殊字符（Telegram Markdown 需要）
+        # 注意：不轉義已經用於格式的 * _ `
         for char in ['[', ']', '(', ')']:
             result = result.replace(char, f'\\{char}')
         
@@ -2077,24 +2077,24 @@ class NotificationService:
             是否發送成功
         """
         if not self._is_pushover_configured():
-            logger.warning("Pushover 配置不完整，跳过推送")
+            logger.warning("Pushover 配置不完整，跳過推送")
             return False
         
         user_key = self._pushover_config['user_key']
         api_token = self._pushover_config['api_token']
         
-        # Pushover API 端点
+        # Pushover API 端點
         api_url = "https://api.pushover.net/1/messages.json"
         
-        # 处理消息标题
+        # 處理消息標題
         if title is None:
             date_str = datetime.now().strftime('%Y-%m-%d')
-            title = f"📈 股票分析报告 - {date_str}"
+            title = f"📈 股票分析報告 - {date_str}"
         
         # Pushover 消息限制 1024 字符
         max_length = 1024
         
-        # 转换 Markdown 为纯文本（Pushover 支持 HTML，但纯文本更通用）
+        # 轉換 Markdown 為純文本（Pushover 支持 HTML，但純文本更通用）
         plain_content = self._markdown_to_plain_text(content)
         
         if len(plain_content) <= max_length:
@@ -2106,35 +2106,35 @@ class NotificationService:
     
     def _markdown_to_plain_text(self, markdown_text: str) -> str:
         """
-        将 Markdown 转换为纯文本
+        將 Markdown 轉換為純文本
         
-        移除 Markdown 格式标记，保留可读性
+        移除 Markdown 格式標記，保留可讀性
         """
         text = markdown_text
         
-        # 移除标题标记 # ## ###
+        # 移除標題標記 # ## ###
         text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
         
         # 移除加粗 **text** -> text
         text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
         
-        # 移除斜体 *text* -> text
+        # 移除斜體 *text* -> text
         text = re.sub(r'\*(.+?)\*', r'\1', text)
         
         # 移除引用 > text -> text
         text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
         
-        # 移除列表标记 - item -> item
+        # 移除列表標記 - item -> item
         text = re.sub(r'^[-*]\s+', '• ', text, flags=re.MULTILINE)
         
-        # 移除分隔线 ---
+        # 移除分隔線 ---
         text = re.sub(r'^---+$', '────────', text, flags=re.MULTILINE)
         
-        # 移除表格语法 |---|---|
+        # 移除表格語法 |---|---|
         text = re.sub(r'\|[-:]+\|[-:|\s]+\|', '', text)
         text = re.sub(r'^\|(.+)\|$', r'\1', text, flags=re.MULTILINE)
         
-        # 清理多余空行
+        # 清理多餘空行
         text = re.sub(r'\n{3,}', '\n\n', text)
         
         return text.strip()
@@ -2149,15 +2149,15 @@ class NotificationService:
         priority: int = 0
     ) -> bool:
         """
-        发送单条 Pushover 消息
+        發送單條 Pushover 消息
         
         Args:
-            api_url: Pushover API 端点
-            user_key: 用户 Key
-            api_token: 应用 API Token
-            message: 消息内容
-            title: 消息标题
-            priority: 优先级 (-2 ~ 2，默认 0)
+            api_url: Pushover API 端點
+            user_key: 用戶 Key
+            api_token: 應用 API Token
+            message: 消息內容
+            title: 消息標題
+            priority: 優先級 (-2 ~ 2，默認 0)
         """
         try:
             payload = {
@@ -2185,7 +2185,7 @@ class NotificationService:
                 return False
                 
         except Exception as e:
-            logger.error(f"发送 Pushover 消息失败: {e}")
+            logger.error(f"發送 Pushover 消息失敗: {e}")
             return False
     
     def _send_pushover_chunked(
@@ -2198,13 +2198,13 @@ class NotificationService:
         max_length: int
     ) -> bool:
         """
-        分段发送长 Pushover 消息
+        分段發送長 Pushover 消息
         
-        按段落分割，确保每段不超过最大长度
+        按段落分割，確保每段不超過最大長度
         """
         import time
         
-        # 按段落（分隔线或双换行）分割
+        # 按段落（分隔線或雙換行）分割
         if "────────" in content:
             sections = content.split("────────")
             separator = "────────"
@@ -2217,14 +2217,14 @@ class NotificationService:
         current_length = 0
         
         for section in sections:
-            # 计算添加这个 section 后的实际长度
-            # join() 只在元素之间放置分隔符，不是每个元素后面
-            # 所以：第一个元素不需要分隔符，后续元素需要一个分隔符连接
+            # 計算添加這個 section 後的實際長度
+            # join() 只在元素之間放置分隔符，不是每個元素後面
+            # 所以：第一個元素不需要分隔符，後續元素需要一個分隔符連接
             if current_chunk:
-                # 已有元素，添加新元素需要：当前长度 + 分隔符 + 新 section
+                # 已有元素，添加新元素需要：當前長度 + 分隔符 + 新 section
                 new_length = current_length + len(separator) + len(section)
             else:
-                # 第一个元素，不需要分隔符
+                # 第一個元素，不需要分隔符
                 new_length = len(section)
             
             if new_length > max_length:
@@ -2242,19 +2242,19 @@ class NotificationService:
         total_chunks = len(chunks)
         success_count = 0
         
-        logger.info(f"Pushover 分批发送：共 {total_chunks} 批")
+        logger.info(f"Pushover 分批發送：共 {total_chunks} 批")
         
         for i, chunk in enumerate(chunks):
-            # 添加分页标记到标题
+            # 添加分頁標記到標題
             chunk_title = f"{title} ({i+1}/{total_chunks})" if total_chunks > 1 else title
             
             if self._send_pushover_message(api_url, user_key, api_token, chunk, chunk_title):
                 success_count += 1
-                logger.info(f"Pushover 第 {i+1}/{total_chunks} 批发送成功")
+                logger.info(f"Pushover 第 {i+1}/{total_chunks} 批發送成功")
             else:
-                logger.error(f"Pushover 第 {i+1}/{total_chunks} 批发送失败")
+                logger.error(f"Pushover 第 {i+1}/{total_chunks} 批發送失敗")
             
-            # 批次间隔，避免触发频率限制
+            # 批次間隔，避免觸發頻率限制
             if i < total_chunks - 1:
                 time.sleep(1)
         
@@ -2550,7 +2550,7 @@ class NotificationService:
                 logger.warning("飛書 APP_ID 或 APP_SECRET 未配置")
                 return False
             
-            # 创建回复客户端
+            # 創建回覆客戶端
             reply_client = FeishuReplyClient(app_id, app_secret)
             
             # 飛書文本消息有長度限制，需要分批發送
@@ -3118,12 +3118,12 @@ class NotificationBuilder:
         alert_type: str = "info"
     ) -> str:
         """
-        构建简单的提醒消息
+        構建簡單的提醒消息
         
         Args:
-            title: 标题
-            content: 内容
-            alert_type: 类型（info, warning, error, success）
+            title: 標題
+            content: 內容
+            alert_type: 類型（info, warning, error, success）
         """
         emoji_map = {
             "info": "ℹ️",
@@ -3227,14 +3227,14 @@ if __name__ == "__main__":
     print(report)
     
     # 保存到文件
-    print("\n=== 保存日报 ===")
+    print("\n=== 保存日報 ===")
     filepath = service.save_report_to_file(report)
     print(f"保存成功: {filepath}")
     
-    # 推送测试
+    # 推送測試
     if service.is_available():
-        print(f"\n=== 推送测试（{service.get_channel_names()}）===")
+        print(f"\n=== 推送測試（{service.get_channel_names()}）===")
         success = service.send(report)
-        print(f"推送结果: {'成功' if success else '失败'}")
+        print(f"推送結果: {'成功' if success else '失敗'}")
     else:
-        print("\n通知渠道未配置，跳过推送测试")
+        print("\n通知渠道未配置，跳過推送測試")

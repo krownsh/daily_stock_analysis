@@ -13,7 +13,7 @@ EfinanceFetcher - 優先數據源 (Priority 0)
 2. 支持批量獲取數據
 3. 更穩定的介面封裝
 
-防封禁策略：
+防封鎖策略：
 1. 每次請求前隨機休眠 1.5-3.0 秒
 2. 隨機輪長 User-Agent
 3. 使用 tenacity 實現指數退避重試
@@ -181,7 +181,7 @@ class EfinanceFetcher(BaseFetcher):
         設置隨機 User-Agent
         
         通過修改 requests Session 的 headers 實現
-        這是關鍵的反爬策略之一
+        這是關鍵的防封鎖策略之一
         """
         try:
             random_ua = random.choice(USER_AGENTS)
@@ -293,15 +293,15 @@ class EfinanceFetcher(BaseFetcher):
             
             api_elapsed = _time.time() - api_start
             
-            # 記錄返回數據摘要
+            # 記錄回傳數據摘要
             if df is not None and not df.empty:
-                logger.info(f"[API返回] ef.stock.get_quote_history 成功: 返回 {len(df)} 行數據, 耗時 {api_elapsed:.2f}s")
-                logger.info(f"[API返回] 列名: {list(df.columns)}")
+                logger.info(f"[API回傳] ef.stock.get_quote_history 成功: 回傳 {len(df)} 行數據, 耗時 {api_elapsed:.2f}s")
+                logger.info(f"[API回傳] 列名: {list(df.columns)}")
                 if '日期' in df.columns:
-                    logger.info(f"[API返回] 日期範圍: {df['日期'].iloc[0]} ~ {df['日期'].iloc[-1]}")
-                logger.debug(f"[API返回] 最新3條數據:\n{df.tail(3).to_string()}")
+                    logger.info(f"[API回傳] 日期範圍: {df['日期'].iloc[0]} ~ {df['日期'].iloc[-1]}")
+                logger.debug(f"[API回傳] 最新3條數據:\n{df.tail(3).to_string()}")
             else:
-                logger.warning(f"[API返回] ef.stock.get_quote_history 返回空數據, 耗時 {api_elapsed:.2f}s")
+                logger.warning(f"[API回傳] ef.stock.get_quote_history 回傳空數據, 耗時 {api_elapsed:.2f}s")
             
             return df
             
@@ -347,41 +347,41 @@ class EfinanceFetcher(BaseFetcher):
             import time as _time
             api_start = _time.time()
             
-            # 调用 efinance 获取 ETF 日线数据
-            # 注意: ef.fund.get_quote_history 不支持 beg/end/klt/fqt 参数
-            # 它返回的是 NAV 数据: 日期, 单位净值, 累计净值, 涨跌幅
+            # 調用 efinance 獲取 ETF 日線數據
+            # 注意: ef.fund.get_quote_history 不支持 beg/end/klt/fqt 參數
+            # 它返回的是 NAV 數據: 日期, 單位淨值, 累計淨值, 漲跌幅
             df = ef.fund.get_quote_history(fund_code=stock_code)
             
-            # 手动过滤日期
+            # 手動過濾日期
             if df is not None and not df.empty and '日期' in df.columns:
-                # 确保日期列是字符串格式，且格式匹配筛选条件
+                # 確保日期列是字串格式，且格式匹配篩選條件
                 # ef 返回的日期通常是 'YYYY-MM-DD'
                 mask = (df['日期'] >= start_date) & (df['日期'] <= end_date)
                 df = df[mask].copy()
             
             api_elapsed = _time.time() - api_start
             
-            # 记录返回数据摘要
+            # 記錄回傳數據摘要
             if df is not None and not df.empty:
-                logger.info(f"[API返回] ef.fund.get_quote_history 成功: 返回 {len(df)} 行数据, 耗时 {api_elapsed:.2f}s")
-                logger.info(f"[API返回] 列名: {list(df.columns)}")
+                logger.info(f"[API回傳] ef.fund.get_quote_history 成功: 回傳 {len(df)} 行數據, 耗時 {api_elapsed:.2f}s")
+                logger.info(f"[API回傳] 列名: {list(df.columns)}")
                 if '日期' in df.columns:
-                    logger.info(f"[API返回] 日期范围: {df['日期'].iloc[0]} ~ {df['日期'].iloc[-1]}")
-                logger.debug(f"[API返回] 最新3条数据:\n{df.tail(3).to_string()}")
+                    logger.info(f"[API回傳] 日期範圍: {df['日期'].iloc[0]} ~ {df['日期'].iloc[-1]}")
+                logger.debug(f"[API回傳] 最新3條數據:\n{df.tail(3).to_string()}")
             else:
-                logger.warning(f"[API返回] ef.fund.get_quote_history 返回空数据, 耗时 {api_elapsed:.2f}s")
+                logger.warning(f"[API回傳] ef.fund.get_quote_history 回傳空數據, 耗時 {api_elapsed:.2f}s")
             
             return df
             
         except Exception as e:
             error_msg = str(e).lower()
             
-            # 检测反爬封禁
-            if any(keyword in error_msg for keyword in ['banned', 'blocked', '频率', 'rate', '限制']):
-                logger.warning(f"检测到可能被封禁: {e}")
+            # 檢測反爬封禁
+            if any(keyword in error_msg for keyword in ['banned', 'blocked', '頻率', 'rate', '限制']):
+                logger.warning(f"檢測到可能被封禁: {e}")
                 raise RateLimitError(f"efinance 可能被限流: {e}") from e
             
-            raise DataFetchError(f"efinance 获取 ETF 数据失败: {e}") from e
+            raise DataFetchError(f"efinance 獲取 ETF 數據失敗: {e}") from e
     
     def _normalize_data(self, df: pd.DataFrame, stock_code: str) -> pd.DataFrame:
         """
@@ -485,7 +485,7 @@ class EfinanceFetcher(BaseFetcher):
                 df = ef.stock.get_realtime_quotes()
                 
                 api_elapsed = _time.time() - api_start
-                logger.info(f"[API返回] ef.stock.get_realtime_quotes 成功: 返回 {len(df)} 只股票, 耗時 {api_elapsed:.2f}s")
+                logger.info(f"[API回傳] ef.stock.get_realtime_quotes 成功: 回傳 {len(df)} 隻股票, 耗時 {api_elapsed:.2f}s")
                 circuit_breaker.record_success(source_key)
                 
                 # 更新快取
@@ -516,7 +516,7 @@ class EfinanceFetcher(BaseFetcher):
             high_col = '最高' if '最高' in df.columns else 'high'
             low_col = '最低' if '最低' in df.columns else 'low'
             open_col = '開盤' if '開盤' in df.columns else 'open'
-            # efinance 也返回量比、市盈率、市值等字段
+            # efinance 也返回量比、市盈率、市值等欄位
             vol_ratio_col = '量比' if '量比' in df.columns else 'volume_ratio'
             pe_col = '市盈率' if '市盈率' in df.columns else 'pe_ratio'
             total_mv_col = '總市值' if '總市值' in df.columns else 'total_mv'

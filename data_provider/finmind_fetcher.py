@@ -145,17 +145,58 @@ class FinMindFetcher:
             logger.error(f"FinMind 計算營收 YoY 失敗 [{stock_code}]: {e}")
             return 0.0
 
-    def fetch_month_revenue(self, stock_code: str, start_date: str) -> pd.DataFrame:
-        """獲取月營收數據"""
+    def fetch_market_summary(self) -> Dict[str, Any]:
+        """獲取台股市場概況（漲跌家數、成交額）"""
         try:
-            df = self.dl.taiwan_stock_month_revenue(
-                stock_id=stock_code,
-                start_date=start_date
+            # FinMind 'taiwan_market_daily' 或 'taiwan_stock_statistics'
+            # 獲取加權指數今日數據
+            df = self.dl.taiwan_stock_index(
+                index_id='TAIEX',
+                start_date=datetime.now().strftime("%Y-%m-%d")
             )
-            return df
+            
+            # 如果今日未收盤或數據未出，抓昨日
+            if df.empty:
+                start_date = (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d")
+                df = self.dl.taiwan_stock_index(index_id='TAIEX', start_date=start_date)
+            
+            if df.empty:
+                return {}
+                
+            latest = df.iloc[-1]
+            
+            # 獲取全市場漲跌統計
+            # FinMind 有 taiwan_stock_statistics 介面
+            stats_df = self.dl.taiwan_stock_statistics(
+                start_date=latest['date'],
+                end_date=latest['date']
+            )
+            
+            summary = {
+                'date': latest['date'],
+                'total_amount': float(latest.get('Trade_Value', 0)) / 1e8, # 轉為億
+                'up_count': 0,
+                'down_count': 0,
+                'flat_count': 0,
+                'limit_up_count': 0,
+                'limit_down_count': 0
+            }
+            
+            if not stats_df.empty:
+                # FinMind stats_df 包含 'type' (漲, 跌, 持平, 漲停, 跌停) 與 'count'
+                for _, row in stats_df.iterrows():
+                    stype = row.get('type')
+                    count = int(row.get('count', 0))
+                    if stype == '漲': summary['up_count'] = count
+                    elif stype == '跌': summary['down_count'] = count
+                    elif stype == '持平': summary['flat_count'] = count
+                    elif stype == '漲停': summary['limit_up_count'] = count
+                    elif stype == '跌停': summary['limit_down_count'] = count
+            
+            return summary
         except Exception as e:
-            logger.error(f"FinMind 獲取月營收失敗 [{stock_code}]: {e}")
-            return pd.DataFrame()
+            logger.error(f"FinMind 獲取市場概況失敗: {e}")
+            return {}
 
     def augment_stock_data(self, main_df: pd.DataFrame, stock_code: str) -> pd.DataFrame:
         """

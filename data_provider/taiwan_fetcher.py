@@ -92,6 +92,57 @@ class TaiwanFetcher(BaseFetcher):
                 raise
             raise DataFetchError(f"TaiwanFetcher 獲取數據失敗: {e}") from e
 
+    def get_main_indices(self) -> Optional[List[Dict[str, Any]]]:
+        """獲取台股主要指數即時行情"""
+        import yfinance as yf
+        indices_map = {
+            '^TWII': '加權指數',
+            '^TWOII': '櫃買指數',
+        }
+        
+        results = []
+        try:
+            for code, name in indices_map.items():
+                ticker = yf.Ticker(code)
+                hist = ticker.history(period='2d')
+                if hist.empty:
+                    continue
+                
+                today = hist.iloc[-1]
+                prev = hist.iloc[-2] if len(hist) > 1 else today
+                
+                price = float(today['Close'])
+                prev_close = float(prev['Close'])
+                high = float(today['High'])
+                low = float(today['Low'])
+                
+                results.append({
+                    'code': code,
+                    'name': name,
+                    'current': price,
+                    'change': round(price - prev_close, 2),
+                    'change_pct': round((price - prev_close) / prev_close * 100, 2) if prev_close else 0,
+                    'open': float(today['Open']),
+                    'high': high,
+                    'low': low,
+                    'prev_close': prev_close,
+                    'volume': float(today['Volume']),
+                    'amount': float(today['Volume']) * price, # 概算
+                    'amplitude': round((high - low) / prev_close * 100, 2) if prev_close else 0,
+                })
+            return results
+        except Exception as e:
+            logger.error(f"[Taiwan] 獲取指數行情失敗: {e}")
+            return None
+
+    def get_market_stats(self) -> Optional[Dict[str, Any]]:
+        """獲取台股市場漲跌統計 (透過 FinMind)"""
+        try:
+            return self.fm.fetch_market_summary()
+        except Exception as e:
+            logger.error(f"[Taiwan] 獲取市場統計失敗: {e}")
+            return None
+
     def _normalize_data(self, df: pd.DataFrame, stock_code: str) -> pd.DataFrame:
         """
         標準化 yfinance 數據為系統規格

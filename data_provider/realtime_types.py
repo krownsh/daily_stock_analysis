@@ -281,13 +281,13 @@ class CircuitBreaker:
     # 狀態常量
     CLOSED = "closed"      # 正常狀態
     OPEN = "open"          # 熔斷狀態（不可用）
-    HALF_OPEN = "half_open"  # 半开狀態（試探性請求）
+    HALF_OPEN = "half_open"  # 半開狀態（試探性請求）
     
     def __init__(
         self,
         failure_threshold: int = 3,       # 連續失敗次數閾值
         cooldown_seconds: float = 300.0,  # 冷卻時間（秒），預設5分鐘
-        half_open_max_calls: int = 1      # 半开狀態最大嘗試次數
+        half_open_max_calls: int = 1      # 半開狀態最大嘗試次數
     ):
         self.failure_threshold = failure_threshold
         self.cooldown_seconds = cooldown_seconds
@@ -324,10 +324,10 @@ class CircuitBreaker:
             # 檢查冷卻時間
             time_since_failure = current_time - state['last_failure_time']
             if time_since_failure >= self.cooldown_seconds:
-                # 冷卻完成，進入半开狀態
+                # 冷卻完成，進入半開狀態
                 state['state'] = self.HALF_OPEN
                 state['half_open_calls'] = 0
-                logger.info(f"[熔斷器] {source} 冷卻完成，進入半开狀態")
+                logger.info(f"[熔斷器] {source} 冷卻完成，進入半開狀態")
                 return True
             else:
                 remaining = self.cooldown_seconds - time_since_failure
@@ -335,7 +335,7 @@ class CircuitBreaker:
                 return False
         
         if state['state'] == self.HALF_OPEN:
-            # 半开狀態下限制請求次數
+            # 半開狀態下限制請求次數
             if state['half_open_calls'] < self.half_open_max_calls:
                 return True
             return False
