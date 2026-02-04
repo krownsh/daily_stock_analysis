@@ -786,7 +786,7 @@ class SearchService:
             search_days = 2
         else: # 週二(1) - 週五(4)
             search_days = 1
-1
+
         # 構建搜尋查詢（優化搜尋效果）
         if focus_keywords:
             # 如果提供了關鍵詞，直接使用關鍵詞作為查詢
