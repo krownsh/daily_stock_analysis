@@ -1005,10 +1005,10 @@ class GeminiAnalyzer:
 | 70%籌碼集中度 | {chip.get('concentration_70', 0):.2%} | |
 | 籌碼狀態 | {chip.get('chip_status', '未知')} | |
 """
-    
-    # 添加台灣股票特有數據
-    if today.get('foreign_buy') is not None and today.get('foreign_buy') != 0:
-        prompt += f"""
+        
+        # 添加台灣股票特有數據
+        if today.get('foreign_buy') is not None and today.get('foreign_buy') != 0:
+            prompt += f"""
 ### 🇹🇼 台灣市場特有籌碼數據
 | 指標 | 數值 | 單位 |
 |------|------|------|
