@@ -1017,6 +1017,7 @@ class GeminiAnalyzer:
 | 自營商買賣超 | {today.get('dealers_buy'):,.0f} | 股 |
 | 融資買賣 | {today.get('margin_buy'):,.0f} | 股 |
 | 融券買賣 | {today.get('short_buy'):,.0f} | 股 |
+| 營收年增率 | {today.get('revenue_yoy'):.2f} | % |
 """
         
         # 添加趨勢分析結果（基於交易理念的預判）

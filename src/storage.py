@@ -97,6 +97,7 @@ class StockDaily(Base):
     dealers_buy = Column(Float)    # 自营商买卖超
     margin_buy = Column(Float)     # 融资买卖
     short_buy = Column(Float)      # 融券买卖
+    revenue_yoy = Column(Float)    # 营收年增率 (%)
     
     # 数据来源
     data_source = Column(String(50))  # 记录数据来源（如 AkshareFetcher）
@@ -135,6 +136,7 @@ class StockDaily(Base):
             'dealers_buy': self.dealers_buy,
             'margin_buy': self.margin_buy,
             'short_buy': self.short_buy,
+            'revenue_yoy': self.revenue_yoy,
             'data_source': self.data_source,
         }
 
@@ -715,6 +717,7 @@ class DatabaseManager:
                         existing.dealers_buy = row.get('dealers_buy')
                         existing.margin_buy = row.get('margin_buy')
                         existing.short_buy = row.get('short_buy')
+                        existing.revenue_yoy = row.get('revenue_yoy')
                         existing.data_source = data_source
                         existing.updated_at = datetime.now()
                     else:
@@ -738,6 +741,7 @@ class DatabaseManager:
                             dealers_buy=row.get('dealers_buy'),
                             margin_buy=row.get('margin_buy'),
                             short_buy=row.get('short_buy'),
+                            revenue_yoy=row.get('revenue_yoy'),
                             data_source=data_source,
                         )
                         session.add(record)

@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 
 from .base import BaseFetcher, DataFetchError, STANDARD_COLUMNS
 from .realtime_types import UnifiedRealtimeQuote, RealtimeSource
+from .finmind_fetcher import FinMindFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ class TaiwanFetcher(BaseFetcher):
     def __init__(self):
         """初始化 TaiwanFetcher"""
         super().__init__()
+        self.fm = FinMindFetcher()
 
     def _convert_stock_code(self, stock_code: str) -> str:
         """
@@ -130,15 +132,18 @@ class TaiwanFetcher(BaseFetcher):
             
         df['code'] = stock_code
         
-        # 填充台灣特有的籌碼數據欄位（目前預設為 0，可擴展）
-        df['foreign_buy'] = 0.0
-        df['it_buy'] = 0.0
-        df['dealers_buy'] = 0.0
-        df['margin_buy'] = 0.0
-        df['short_buy'] = 0.0
+        # 透過 FinMind 補齊籌碼數據
+        try:
+            df = self.fm.augment_stock_data(df, stock_code)
+        except Exception as e:
+            logger.warning(f"[Taiwan] FinMind 數據增強失敗: {e}")
+            # 確保欄位存在以防合併出錯
+            for col in ['foreign_buy', 'it_buy', 'dealers_buy', 'margin_buy', 'short_buy', 'revenue_yoy']:
+                if col not in df.columns:
+                    df[col] = 0.0
         
         # 只保留標準列 + 台灣特有列
-        keep_cols = ['code'] + STANDARD_COLUMNS + ['foreign_buy', 'it_buy', 'dealers_buy', 'margin_buy', 'short_buy']
+        keep_cols = ['code'] + STANDARD_COLUMNS + ['foreign_buy', 'it_buy', 'dealers_buy', 'margin_buy', 'short_buy', 'revenue_yoy']
         existing_cols = [col for col in keep_cols if col in df.columns]
         df = df[existing_cols]
         
