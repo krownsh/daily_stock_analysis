@@ -175,16 +175,21 @@ class StockAnalysisPipeline:
                     # 使用即時行情返回的真實股票名稱
                     if realtime_quote.name:
                         stock_name = realtime_quote.name
+                    
+                    # 獲取英文名稱（用於搜尋補強）
+                    english_name = getattr(realtime_quote, 'english_name', None)
+                    
                     # 相容不同數據源的欄位（有些數據源可能沒有 volume_ratio）
                     volume_ratio = getattr(realtime_quote, 'volume_ratio', None)
                     turnover_rate = getattr(realtime_quote, 'turnover_rate', None)
-                    logger.info(f"[{code}] {stock_name} 即時行情: 價格={realtime_quote.price}, "
+                    logger.info(f"[{code}] {stock_name}({english_name}) 即時行情: 價格={realtime_quote.price}, "
                               f"量比={volume_ratio}, 換手率={turnover_rate}% "
                               f"(來源: {realtime_quote.source.value if hasattr(realtime_quote, 'source') else 'unknown'})")
                 else:
                     logger.info(f"[{code}] 即時行情獲取失敗或已禁用，將使用歷史數據進行分析")
             except Exception as e:
                 logger.warning(f"[{code}] 獲取即時行情失敗: {e}")
+                english_name = None
             
             # 如果還是沒有名稱，使用代碼作為名稱
             if not stock_name:
@@ -227,6 +232,7 @@ class StockAnalysisPipeline:
                 intel_results = self.search_service.search_comprehensive_intel(
                     stock_code=code,
                     stock_name=stock_name,
+                    english_name=english_name,
                     max_searches=5
                 )
                 

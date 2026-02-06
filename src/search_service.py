@@ -759,6 +759,7 @@ class SearchService:
         self,
         stock_code: str,
         stock_name: str,
+        english_name: Optional[str] = None,
         max_results: int = 5,
         focus_keywords: Optional[List[str]] = None
     ) -> SearchResponse:
@@ -776,24 +777,41 @@ class SearchService:
         """
         # 智慧確定搜尋時間範圍
         # 策略：
-        # 1. 週二至週五：搜尋近 1 天（24 小時）
-        # 2. 週六、週日：搜尋近 2-3 天（覆蓋週末）
-        # 3. 週一：搜尋近 3 天（覆蓋週末）
+        # 1. 週一至週五：搜尋近 3 天（台股新聞更新較慢，且需覆蓋昨日關鍵資訊）
+        # 2. 週六、週日：搜尋近 5 天（覆蓋整週動態）
         today_weekday = datetime.now().weekday()
-        if today_weekday == 0: # 週一
+        if today_weekday >= 5: # 週六(5)、週日(6)
+            search_days = 5
+        else: # 週一(0) - 週五(4)
             search_days = 3
-        elif today_weekday >= 5: # 週六(5)、週日(6)
-            search_days = 2
-        else: # 週二(1) - 週五(4)
-            search_days = 1
 
         # 構建搜尋查詢（優化搜尋效果）
         if focus_keywords:
             # 如果提供了關鍵詞，直接使用關鍵詞作為查詢
             query = " ".join(focus_keywords)
         else:
-            # 預設主查詢：股票名稱 + 核心關鍵詞
-            query = f"{stock_name} {stock_code} 股票 最新消息"
+            # 台股優化：如果是 4 位數字代碼，加上 "台股" 關鍵字，並處理可能的英文名稱
+            is_tw_stock = len(stock_code) == 4 and stock_code.isdigit()
+            
+            # 檢查名稱是否為純英文 (yfinance 抓取的常見情況)
+            import re
+            is_english_name = bool(re.match(r'^[A-Za-z\s,\.]+$', stock_name))
+            
+            if is_tw_stock:
+                # 構建核心搜尋名稱：中文 + 英文（如果不同且不是純代碼）
+                search_name = stock_name
+                if english_name and english_name.lower() != stock_name.lower() and english_name != stock_code:
+                    # 針對台股，英文名通常太長，取前兩個單字或縮寫
+                    clean_eng = english_name.split(',')[0].split(' Corp')[0].split(' Inc')[0]
+                    search_name = f"{stock_name} {clean_eng}"
+                
+                if is_english_name:
+                    # 如果只有英文名，優先使用代碼搜尋，並加上台股標籤
+                    query = f"台股 {stock_code} 最新消息 新聞"
+                else:
+                    query = f"台股 {search_name} {stock_code} 最新消息"
+            else:
+                query = f"{stock_name} {stock_code} 股票 最新消息"
 
         logger.info(f"搜尋股票新聞: {stock_name}({stock_code}), query='{query}', 時間範圍: 近 {search_days} 天")
         
@@ -869,6 +887,7 @@ class SearchService:
         self,
         stock_code: str,
         stock_name: str,
+        english_name: Optional[str] = None,
         max_searches: int = 3
     ) -> Dict[str, SearchResponse]:
         """
@@ -890,31 +909,44 @@ class SearchService:
         results = {}
         search_count = 0
         
+        is_tw_stock = len(stock_code) == 4 and stock_code.isdigit()
+        prefix = "台股 " if is_tw_stock else ""
+        
+        # 構建核心搜尋名稱：中文 + 英文（如果不同且不是純代碼）
+        search_name = stock_name
+        if english_name and english_name.lower() != stock_name.lower() and english_name != stock_code:
+            # 針對台股，英文名通常太長，取前兩個單字或縮寫
+            if is_tw_stock:
+                clean_eng = english_name.split(',')[0].split(' Corp')[0].split(' Inc')[0]
+                search_name = f"{stock_name} {clean_eng}"
+            else:
+                search_name = f"{stock_name} {english_name}"
+        
         # 定義搜尋維度
         search_dimensions = [
             {
                 'name': 'latest_news',
-                'query': f"{stock_name} {stock_code} 最新 新聞 重大 事件",
+                'query': f"{prefix}{search_name} {stock_code} 最新 新聞 重大 事件",
                 'desc': '最新消息'
             },
             {
                 'name': 'market_analysis',
-                'query': f"{stock_name} 研報 目標價 評級 深度分析",
+                'query': f"{prefix}{search_name} {stock_code} 研報 目標價 評級 深度分析",
                 'desc': '機構分析'
             },
             {
                 'name': 'risk_check', 
-                'query': f"{stock_name} 減持 處罰 違規 訴訟 利空 風險",
+                'query': f"{prefix}{search_name} {stock_code} 減持 處罰 違規 訴訟 利空 風險",
                 'desc': '風險排查'
             },
             {
                 'name': 'earnings',
-                'query': f"{stock_name} 業績預告 財報 營收 淨利潤 同比增長",
+                'query': f"{prefix}{search_name} {stock_code} 業績預告 財報 營收 淨利潤 同比增長",
                 'desc': '業績預期'
             },
             {
                 'name': 'industry',
-                'query': f"{stock_name} 所在行業 競爭對手 市場份額 行業前景",
+                'query': f"{prefix}{search_name} {stock_code} 所在行業 競爭對手 市場份額 行業前景",
                 'desc': '行業分析'
             },
         ]

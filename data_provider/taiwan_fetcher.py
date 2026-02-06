@@ -200,6 +200,10 @@ class TaiwanFetcher(BaseFetcher):
         
         return df
 
+    def get_stock_name(self, stock_code: str) -> Optional[str]:
+        """獲取台股中文名稱"""
+        return self.fm.fetch_stock_name(stock_code)
+
     def get_realtime_quote(self, stock_code: str) -> Optional[UnifiedRealtimeQuote]:
         """
         獲取台股即時行情
@@ -238,17 +242,24 @@ class TaiwanFetcher(BaseFetcher):
                     price = price_rt
                     prev_close = info.get('regularMarketPreviousClose') or prev_close
                 
-                name = info.get('shortName') or info.get('longName') or stock_code
+                # 優先獲取中文名稱
+                name = self.get_stock_name(stock_code)
+                eng_name = info.get('shortName') or info.get('longName') or ""
+                if not name:
+                    name = eng_name or stock_code
+                
                 pe = info.get('trailingPE')
                 pb = info.get('priceToBook')
                 mv = info.get('marketCap')
-            except:
-                name = stock_code
+            except Exception as e:
+                logger.debug(f"獲取個股 info 失敗: {e}")
+                name = self.get_stock_name(stock_code) or stock_code
                 pe, pb, mv = None, None, None
                 
             quote = UnifiedRealtimeQuote(
                 code=stock_code,
                 name=name,
+                english_name=eng_name,
                 source=RealtimeSource.FALLBACK,
                 price=price,
                 change_pct=round((price - prev_close) / prev_close * 100, 2) if prev_close else 0,

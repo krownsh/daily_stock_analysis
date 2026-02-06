@@ -114,6 +114,7 @@ class UnifiedRealtimeQuote:
     """
     code: str
     name: str = ""
+    english_name: str = ""
     source: RealtimeSource = RealtimeSource.FALLBACK
     
     # === 核心價格數據（幾乎所有源都有）===
@@ -150,6 +151,7 @@ class UnifiedRealtimeQuote:
         result = {
             'code': self.code,
             'name': self.name,
+            'english_name': self.english_name,
             'source': self.source.value,
         }
         # 只添加非 None 的欄位

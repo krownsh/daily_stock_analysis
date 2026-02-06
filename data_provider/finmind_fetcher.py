@@ -43,6 +43,20 @@ class FinMindFetcher:
         else:
             logger.warning("FinMind 未配置 Token，將使用匿名存取（有頻率限制）")
 
+    def fetch_stock_name(self, stock_code: str) -> Optional[str]:
+        """獲取台股中文名稱"""
+        try:
+            # 去除可能的後綴
+            code = stock_code.split('.')[0]
+            df = self.dl.taiwan_stock_info()
+            if not df.empty:
+                row = df[df['stock_id'] == code]
+                if not row.empty:
+                    return row.iloc[0]['stock_name']
+        except Exception as e:
+            logger.error(f"FinMind 獲取股票名稱失敗 [{stock_code}]: {e}")
+        return None
+
     def fetch_institutional_investors(self, stock_code: str, start_date: str, end_date: str) -> pd.DataFrame:
         """獲取三大法人買賣超"""
         try:
